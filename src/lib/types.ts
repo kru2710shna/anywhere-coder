@@ -1,5 +1,12 @@
 export type TaskStatus = 'received' | 'transcribing' | 'coding' | 'done' | 'error';
 
+export interface TaskLog {
+  id: string;
+  message: string;
+  type: 'received' | 'processing' | 'done' | 'error';
+  timestamp: Date;
+}
+
 export interface Task {
   id: string;
   text: string;
@@ -8,6 +15,9 @@ export interface Task {
   whatsNext?: string;
   timestamp: Date;
   linesWritten?: number;
+  commitHash?: string;
+  commitMessage?: string;
+  logs: TaskLog[];
 }
 
 export interface GitCommit {

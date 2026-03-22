@@ -36,7 +36,7 @@ export function TaskCard({ task }: { task: Task }) {
       </div>
       <p className="text-sm font-medium text-foreground">{task.text}</p>
       {task.summary && (
-        <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{task.summary}</p>
+        <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-2">{task.summary}</p>
       )}
     </motion.div>
   );
