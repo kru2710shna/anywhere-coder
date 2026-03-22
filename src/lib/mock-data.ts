@@ -12,6 +12,15 @@ export const initialTasks: Task[] = [
     whatsNext: 'Consider adding a background image or gradient to the hero.',
     timestamp: min(2),
     linesWritten: 18,
+    commitHash: 'a3f7c21',
+    commitMessage: 'feat: add hero section with headline and CTA',
+    logs: [
+      { id: '1-d', message: 'Committed: feat: add hero section with headline and CTA', type: 'done', timestamp: min(2) },
+      { id: '1-w', message: 'Writing 2 files...', type: 'processing', timestamp: min(2.1) },
+      { id: '1-c', message: 'Asking Claude to add hero section...', type: 'processing', timestamp: min(2.3) },
+      { id: '1-t', message: 'Transcribing voice...', type: 'processing', timestamp: min(2.5) },
+      { id: '1-r', message: 'Received task', type: 'received', timestamp: min(2.6) },
+    ],
   },
   {
     id: '2',
@@ -21,6 +30,13 @@ export const initialTasks: Task[] = [
     whatsNext: 'Add mobile hamburger menu for responsive design.',
     timestamp: min(5),
     linesWritten: 12,
+    commitHash: 'e1b4d09',
+    commitMessage: 'style: dark navbar with white text',
+    logs: [
+      { id: '2-d', message: 'Committed: style: dark navbar with white text', type: 'done', timestamp: min(5) },
+      { id: '2-w', message: 'Writing 1 file...', type: 'processing', timestamp: min(5.1) },
+      { id: '2-r', message: 'Received task', type: 'received', timestamp: min(5.3) },
+    ],
   },
   {
     id: '3',
@@ -30,6 +46,13 @@ export const initialTasks: Task[] = [
     whatsNext: 'Style the navbar and add active link highlighting.',
     timestamp: min(8),
     linesWritten: 17,
+    commitHash: '7c2e5f3',
+    commitMessage: 'feat: add navbar with Home About Contact links',
+    logs: [
+      { id: '3-d', message: 'Committed: feat: add navbar with Home About Contact links', type: 'done', timestamp: min(8) },
+      { id: '3-w', message: 'Writing 3 files...', type: 'processing', timestamp: min(8.1) },
+      { id: '3-r', message: 'Received task', type: 'received', timestamp: min(8.3) },
+    ],
   },
 ];
 
@@ -41,19 +64,7 @@ export const initialCommits: GitCommit[] = [
   { hash: 'f0d2e77', message: 'docs: add README with project overview' },
 ];
 
-export const initialActivityLogs: ActivityLog[] = [
-  { id: 'l1', message: 'Committed: feat: add hero section with headline and CTA', type: 'done', timestamp: min(2) },
-  { id: 'l2', message: 'Writing 2 files...', type: 'processing', timestamp: min(2.1) },
-  { id: 'l3', message: 'Asking Claude to add hero section...', type: 'processing', timestamp: min(2.3) },
-  { id: 'l4', message: 'Transcribing voice...', type: 'processing', timestamp: min(2.5) },
-  { id: 'l5', message: 'Received task: "Add hero section with headline"', type: 'received', timestamp: min(2.6) },
-  { id: 'l6', message: 'Committed: style: dark navbar with white text', type: 'done', timestamp: min(5) },
-  { id: 'l7', message: 'Writing 1 file...', type: 'processing', timestamp: min(5.1) },
-  { id: 'l8', message: 'Received task: "Make navbar dark with white text"', type: 'received', timestamp: min(5.3) },
-  { id: 'l9', message: 'Committed: feat: add navbar with Home About Contact links', type: 'done', timestamp: min(8) },
-  { id: 'l10', message: 'Writing 3 files...', type: 'processing', timestamp: min(8.1) },
-  { id: 'l11', message: 'Received task: "Add a navbar with Home About Contact"', type: 'received', timestamp: min(8.3) },
-];
+export const initialActivityLogs: ActivityLog[] = [];
 
 const simulatedTasks = [
   { text: 'Add a footer with social media links', summary: 'Created a sticky footer with GitHub, Twitter, and LinkedIn icons. Centered layout with muted colors.', whatsNext: 'Add a newsletter signup form to the footer.', commit: 'feat: add footer with social links', lines: 22 },

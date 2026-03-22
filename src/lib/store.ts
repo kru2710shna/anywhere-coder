@@ -13,7 +13,7 @@ interface AppState {
   simulateTask: () => void;
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
+export const useAppStore = create<AppState>((set) => ({
   tasks: initialTasks,
   commits: initialCommits,
   activityLogs: initialActivityLogs,
@@ -29,12 +29,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Phase 1: received
     set((s) => ({
       micState: 'recording',
-      activityLogs: [
-        { id: `${id}-r`, message: `Received task: "${sim.text}"`, type: 'received', timestamp: now },
-        ...s.activityLogs,
-      ],
       tasks: [
-        { id, text: sim.text, status: 'received', timestamp: now },
+        {
+          id,
+          text: sim.text,
+          status: 'received',
+          timestamp: now,
+          logs: [{ id: `${id}-r`, message: 'Received task', type: 'received' as const, timestamp: now }],
+        },
         ...s.tasks,
       ],
     }));
@@ -43,22 +45,33 @@ export const useAppStore = create<AppState>((set, get) => ({
     setTimeout(() => {
       set((s) => ({
         micState: 'processing',
-        activityLogs: [
-          { id: `${id}-t`, message: 'Transcribing voice...', type: 'processing', timestamp: new Date() },
-          ...s.activityLogs,
-        ],
-        tasks: s.tasks.map((t) => t.id === id ? { ...t, status: 'transcribing' as const } : t),
+        tasks: s.tasks.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status: 'transcribing' as const,
+                logs: [{ id: `${id}-t`, message: 'Transcribing voice...', type: 'processing' as const, timestamp: new Date() }, ...t.logs],
+              }
+            : t
+        ),
       }));
     }, 800);
 
     // Phase 3: coding
     setTimeout(() => {
       set((s) => ({
-        activityLogs: [
-          { id: `${id}-c`, message: `Asking Claude to ${sim.text.toLowerCase()}...`, type: 'processing', timestamp: new Date() },
-          ...s.activityLogs,
-        ],
-        tasks: s.tasks.map((t) => t.id === id ? { ...t, status: 'coding' as const } : t),
+        tasks: s.tasks.map((t) =>
+          t.id === id
+            ? {
+                ...t,
+                status: 'coding' as const,
+                logs: [
+                  { id: `${id}-c`, message: `Asking Claude to ${sim.text.toLowerCase()}...`, type: 'processing' as const, timestamp: new Date() },
+                  ...t.logs,
+                ],
+              }
+            : t
+        ),
       }));
     }, 2000);
 
@@ -68,14 +81,22 @@ export const useAppStore = create<AppState>((set, get) => ({
       set((s) => ({
         micState: 'done',
         totalLines: s.totalLines + sim.lines,
-        activityLogs: [
-          { id: `${id}-d`, message: `Committed: ${sim.commit}`, type: 'done', timestamp: new Date() },
-          { id: `${id}-w`, message: `Writing ${Math.ceil(sim.lines / 10)} files...`, type: 'processing', timestamp: new Date() },
-          ...s.activityLogs,
-        ],
         tasks: s.tasks.map((t) =>
           t.id === id
-            ? { ...t, status: 'done' as const, summary: sim.summary, whatsNext: sim.whatsNext, linesWritten: sim.lines }
+            ? {
+                ...t,
+                status: 'done' as const,
+                summary: sim.summary,
+                whatsNext: sim.whatsNext,
+                linesWritten: sim.lines,
+                commitHash: hash,
+                commitMessage: sim.commit,
+                logs: [
+                  { id: `${id}-d`, message: `Committed: ${sim.commit}`, type: 'done' as const, timestamp: new Date() },
+                  { id: `${id}-w`, message: `Writing ${Math.ceil(sim.lines / 10)} files...`, type: 'processing' as const, timestamp: new Date() },
+                  ...t.logs,
+                ],
+              }
             : t
         ),
         commits: [{ hash, message: sim.commit }, ...s.commits].slice(0, 5),
