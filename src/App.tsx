@@ -5,9 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { DashboardView } from "@/components/DashboardView";
 import { MobileView } from "@/components/MobileView";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Home from "@/pages/Home";
+
+type Screen = "home" | "app";
 
 function App() {
   const isMobile = useIsMobile();
+  const [screen, setScreen] = useState<Screen>("home");
   const [forceView, setForceView] = useState<"mobile" | "dashboard" | null>(null);
 
   const view = forceView ?? (isMobile ? "mobile" : "dashboard");
@@ -16,7 +20,9 @@ function App() {
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      {view === "mobile" ? (
+      {screen === "home" ? (
+        <Home onEnter={() => setScreen("app")} />
+      ) : view === "mobile" ? (
         <MobileView onSwitchView={() => setForceView("dashboard")} />
       ) : (
         <DashboardView onSwitchView={() => setForceView("mobile")} />
