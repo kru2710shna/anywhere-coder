@@ -1,33 +1,28 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Home from "./pages/Home";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+import { DashboardView } from "@/components/DashboardView";
+import { MobileView } from "@/components/MobileView";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const queryClient = new QueryClient();
+function App() {
+  const isMobile = useIsMobile();
+  const [forceView, setForceView] = useState<"mobile" | "dashboard" | null>(null);
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+  const view = forceView ?? (isMobile ? "mobile" : "dashboard");
+
+  return (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
+      {view === "mobile" ? (
+        <MobileView onSwitchView={() => setForceView("dashboard")} />
+      ) : (
+        <DashboardView onSwitchView={() => setForceView("mobile")} />
+      )}
     </TooltipProvider>
-  </QueryClientProvider>
-);
+  );
+}
 
 export default App;
