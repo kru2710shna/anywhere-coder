@@ -1,53 +1,16 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
 import { motion } from 'framer-motion';
-import { Code2, Mail, Lock, Loader2 } from 'lucide-react';
+import { Code2, Mail, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { signIn } = useAuth();
 
-  useEffect(() => {
-    if (session) navigate('/dashboard');
-  }, [session, navigate]);
-
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setMessage('');
-
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      if (error) setError(error.message);
-      else setMessage('Check your email for a confirmation link.');
-    }
-    setLoading(false);
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError('');
-    const { error } = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
-    });
-    if (error) setError(error.message);
+  const handleSignIn = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    signIn();
+    navigate('/dashboard');
   };
 
   return (
@@ -58,7 +21,6 @@ export default function Auth() {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-sm"
       >
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-2 mb-3">
             <Code2 className="h-6 w-6 text-primary" />
@@ -69,9 +31,8 @@ export default function Auth() {
           <p className="text-xs text-muted-foreground">your AI dev team — anywhere</p>
         </div>
 
-        {/* Google */}
         <button
-          onClick={handleGoogleSignIn}
+          onClick={() => handleSignIn()}
           className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted active:scale-[0.98]"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -83,23 +44,19 @@ export default function Auth() {
           Continue with Google
         </button>
 
-        {/* Divider */}
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
           <span className="text-xs text-muted-foreground">or</span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
-        {/* Email form */}
-        <form onSubmit={handleEmailAuth} className="space-y-3">
+        <form onSubmit={handleSignIn} className="space-y-3">
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="email"
               placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              defaultValue="demo@example.com"
               className="w-full rounded-lg border border-border bg-surface py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
@@ -108,36 +65,18 @@ export default function Auth() {
             <input
               type="password"
               placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
+              defaultValue="password"
               className="w-full rounded-lg border border-border bg-surface py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
-          {error && <p className="text-xs text-destructive">{error}</p>}
-          {message && <p className="text-xs text-success">{message}</p>}
-
           <button
             type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.98]"
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isLogin ? 'Sign in' : 'Create account'}
+            Sign in
           </button>
         </form>
-
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-          <button
-            onClick={() => { setIsLogin(!isLogin); setError(''); setMessage(''); }}
-            className="text-primary hover:underline"
-          >
-            {isLogin ? 'Sign up' : 'Sign in'}
-          </button>
-        </p>
       </motion.div>
     </div>
   );
