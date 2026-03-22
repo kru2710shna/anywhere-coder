@@ -7,11 +7,11 @@ interface MobileViewProps {
 }
 
 export function MobileView({ onSwitchView }: MobileViewProps) {
-  const { tasks, micState } = useAppStore();
+  const { projects, micState } = useAppStore();
+  const allTasks = projects.flatMap((p) => p.tasks).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   return (
     <div className="flex min-h-screen flex-col px-6 py-8">
-      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-sm font-semibold uppercase tracking-[0.2em] text-foreground">
           Work From Anywhere
@@ -19,19 +19,16 @@ export function MobileView({ onSwitchView }: MobileViewProps) {
         <p className="mt-1 text-xs text-muted-foreground">your AI dev team — anywhere</p>
       </div>
 
-      {/* Mic */}
       <div className="flex flex-1 flex-col items-center justify-center -mt-12">
         <MicButton state={micState} />
       </div>
 
-      {/* Status Feed */}
       <div className="mt-8 flex-1 space-y-3 overflow-y-auto max-h-[40vh]">
-        {tasks.map((task) => (
+        {allTasks.map((task) => (
           <TaskCard key={task.id} task={task} />
         ))}
       </div>
 
-      {/* Footer */}
       <button
         onClick={onSwitchView}
         className="mt-6 text-center text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
