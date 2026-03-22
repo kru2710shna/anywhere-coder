@@ -4,11 +4,10 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
-  const { session } = useAuth();
+  const { isSignedIn } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5">
         <div className="flex items-center gap-2">
           <Code2 className="h-5 w-5 text-primary" />
@@ -17,14 +16,13 @@ export default function Home() {
           </span>
         </div>
         <Link
-          to={session ? '/dashboard' : '/auth'}
+          to={isSignedIn ? '/dashboard' : '/auth'}
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.98]"
         >
-          {session ? 'Dashboard' : 'Sign in'}
+          {isSignedIn ? 'Dashboard' : 'Sign in'}
         </Link>
       </nav>
 
-      {/* Hero */}
       <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 24, filter: 'blur(8px)' }}
@@ -55,7 +53,7 @@ export default function Home() {
 
           <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
-              to={session ? '/dashboard' : '/auth'}
+              to={isSignedIn ? '/dashboard' : '/auth'}
               className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.98]"
             >
               Get started
@@ -64,7 +62,6 @@ export default function Home() {
           </div>
         </motion.div>
 
-        {/* Features */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -85,7 +82,6 @@ export default function Home() {
         </motion.div>
       </main>
 
-      {/* Footer */}
       <footer className="px-6 py-6 text-center text-xs text-muted-foreground">
         Built with voice, powered by AI
       </footer>
