@@ -1,57 +1,67 @@
-import { Task, GitCommit, ActivityLog } from './types';
+import { Project, GitCommit, ActivityLog } from './types';
 
 const now = new Date();
 const min = (n: number) => new Date(now.getTime() - n * 60000);
 
-export const initialTasks: Task[] = [
+export const initialProjects: Project[] = [
   {
-    id: '1',
-    text: 'Add hero section with headline',
-    status: 'done',
-    summary: 'Created a hero section with a large headline "Build Without Limits", a subtitle, and a CTA button. Used flexbox centering with responsive padding.',
-    whatsNext: 'Consider adding a background image or gradient to the hero.',
-    timestamp: min(2),
-    linesWritten: 18,
-    commitHash: 'a3f7c21',
-    commitMessage: 'feat: add hero section with headline and CTA',
-    logs: [
-      { id: '1-d', message: 'Committed: feat: add hero section with headline and CTA', type: 'done', timestamp: min(2) },
-      { id: '1-w', message: 'Writing 2 files...', type: 'processing', timestamp: min(2.1) },
-      { id: '1-c', message: 'Asking Claude to add hero section...', type: 'processing', timestamp: min(2.3) },
-      { id: '1-t', message: 'Transcribing voice...', type: 'processing', timestamp: min(2.5) },
-      { id: '1-r', message: 'Received task', type: 'received', timestamp: min(2.6) },
+    id: 'p1',
+    title: 'Portfolio Website',
+    createdAt: min(10),
+    tasks: [
+      {
+        id: '1',
+        text: 'Add hero section with headline',
+        status: 'done',
+        summary: 'Created a hero section with a large headline "Build Without Limits", a subtitle, and a CTA button.',
+        whatsNext: 'Consider adding a background image or gradient to the hero.',
+        timestamp: min(2),
+        linesWritten: 18,
+        commitHash: 'a3f7c21',
+        commitMessage: 'feat: add hero section with headline and CTA',
+        logs: [
+          { id: '1-d', message: 'Committed: feat: add hero section', type: 'done', timestamp: min(2) },
+          { id: '1-w', message: 'Writing 2 files...', type: 'processing', timestamp: min(2.1) },
+          { id: '1-r', message: 'Received task', type: 'received', timestamp: min(2.6) },
+        ],
+      },
+      {
+        id: '2',
+        text: 'Make navbar dark with white text',
+        status: 'done',
+        summary: 'Updated navbar background to dark, text to white, and hover states to gray-300.',
+        whatsNext: 'Add mobile hamburger menu.',
+        timestamp: min(5),
+        linesWritten: 12,
+        commitHash: 'e1b4d09',
+        commitMessage: 'style: dark navbar with white text',
+        logs: [
+          { id: '2-d', message: 'Committed: style: dark navbar', type: 'done', timestamp: min(5) },
+          { id: '2-r', message: 'Received task', type: 'received', timestamp: min(5.3) },
+        ],
+      },
     ],
   },
   {
-    id: '2',
-    text: 'Make navbar dark with white text',
-    status: 'done',
-    summary: 'Updated the navbar background to bg-gray-900, text to white, and hover states to gray-300. Added a subtle bottom border.',
-    whatsNext: 'Add mobile hamburger menu for responsive design.',
-    timestamp: min(5),
-    linesWritten: 12,
-    commitHash: 'e1b4d09',
-    commitMessage: 'style: dark navbar with white text',
-    logs: [
-      { id: '2-d', message: 'Committed: style: dark navbar with white text', type: 'done', timestamp: min(5) },
-      { id: '2-w', message: 'Writing 1 file...', type: 'processing', timestamp: min(5.1) },
-      { id: '2-r', message: 'Received task', type: 'received', timestamp: min(5.3) },
-    ],
-  },
-  {
-    id: '3',
-    text: 'Add a navbar with Home About Contact',
-    status: 'done',
-    summary: 'Created a responsive navbar component with three navigation links: Home, About, and Contact. Includes the site logo on the left.',
-    whatsNext: 'Style the navbar and add active link highlighting.',
-    timestamp: min(8),
-    linesWritten: 17,
-    commitHash: '7c2e5f3',
-    commitMessage: 'feat: add navbar with Home About Contact links',
-    logs: [
-      { id: '3-d', message: 'Committed: feat: add navbar with Home About Contact links', type: 'done', timestamp: min(8) },
-      { id: '3-w', message: 'Writing 3 files...', type: 'processing', timestamp: min(8.1) },
-      { id: '3-r', message: 'Received task', type: 'received', timestamp: min(8.3) },
+    id: 'p2',
+    title: 'E-Commerce Dashboard',
+    createdAt: min(30),
+    tasks: [
+      {
+        id: '3',
+        text: 'Add a navbar with Home About Contact',
+        status: 'done',
+        summary: 'Created a responsive navbar with three navigation links.',
+        whatsNext: 'Style the navbar and add active link highlighting.',
+        timestamp: min(8),
+        linesWritten: 17,
+        commitHash: '7c2e5f3',
+        commitMessage: 'feat: add navbar with links',
+        logs: [
+          { id: '3-d', message: 'Committed: feat: add navbar', type: 'done', timestamp: min(8) },
+          { id: '3-r', message: 'Received task', type: 'received', timestamp: min(8.3) },
+        ],
+      },
     ],
   },
 ];
@@ -67,9 +77,9 @@ export const initialCommits: GitCommit[] = [
 export const initialActivityLogs: ActivityLog[] = [];
 
 const simulatedTasks = [
-  { text: 'Add a footer with social media links', summary: 'Created a sticky footer with GitHub, Twitter, and LinkedIn icons. Centered layout with muted colors.', whatsNext: 'Add a newsletter signup form to the footer.', commit: 'feat: add footer with social links', lines: 22 },
-  { text: 'Create a contact form with email and message fields', summary: 'Built a contact form with email input, textarea for messages, and a submit button. Includes basic validation.', whatsNext: 'Connect the form to an API endpoint.', commit: 'feat: add contact form component', lines: 34 },
-  { text: 'Add a features grid with 3 cards', summary: 'Created a responsive 3-column grid with feature cards. Each card has an icon, title, and description.', whatsNext: 'Add hover animations to the feature cards.', commit: 'feat: add features grid section', lines: 28 },
+  { text: 'Add a footer with social media links', summary: 'Created a sticky footer with GitHub, Twitter, and LinkedIn icons.', whatsNext: 'Add a newsletter signup form.', commit: 'feat: add footer with social links', lines: 22 },
+  { text: 'Create a contact form', summary: 'Built a contact form with email input, textarea, and submit button.', whatsNext: 'Connect the form to an API endpoint.', commit: 'feat: add contact form', lines: 34 },
+  { text: 'Add a features grid with 3 cards', summary: 'Created a responsive 3-column grid with feature cards.', whatsNext: 'Add hover animations to the cards.', commit: 'feat: add features grid', lines: 28 },
 ];
 
 let simIndex = 0;

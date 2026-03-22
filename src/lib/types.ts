@@ -20,6 +20,13 @@ export interface Task {
   logs: TaskLog[];
 }
 
+export interface Project {
+  id: string;
+  title: string;
+  tasks: Task[];
+  createdAt: Date;
+}
+
 export interface GitCommit {
   hash: string;
   message: string;
