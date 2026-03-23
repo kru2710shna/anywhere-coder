@@ -5,7 +5,7 @@ import { MicButton } from '@/components/MicButton';
 import { TaskStatus } from '@/lib/types';
 import {
   Code2, ChevronRight, GitCommit, CheckCircle,
-  Plus, ArrowRight, FolderOpen, Layers, ArrowLeft,
+  Plus, ArrowRight, FolderOpen, Layers, ArrowLeft, Settings,
   Mic, Send, X,
 } from 'lucide-react';
 
@@ -32,7 +32,7 @@ function timeAgo(date: Date) {
   return `${Math.floor(minutes / 60)}h ago`;
 }
 
-export function DashboardView({ onSwitchView }: { onSwitchView: () => void }) {
+export function DashboardView({ onSwitchView, onOpenSettings }: { onSwitchView: () => void; onOpenSettings?: () => void }) {
   const { projects, isOnline, totalLines, micState, simulateTask, addProject, addTask } = useAppStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
@@ -75,6 +75,7 @@ export function DashboardView({ onSwitchView }: { onSwitchView: () => void }) {
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <button onClick={onOpenSettings} className="text-muted-foreground hover:text-foreground transition-colors ml-2"><Settings className="h-3.5 w-3.5" /></button>
           <span className={`h-2 w-2 rounded-full ${isOnline ? 'bg-success animate-status-pulse' : 'bg-destructive'}`} />
           <span className="text-[11px] text-muted-foreground">{isOnline ? 'Online' : 'Offline'}</span>
         </div>

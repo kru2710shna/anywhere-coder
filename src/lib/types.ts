@@ -17,6 +17,7 @@ export interface Task {
   linesWritten?: number;
   commitHash?: string;
   commitMessage?: string;
+  filesWritten?: string[];
   logs: TaskLog[];
 }
 
@@ -39,4 +40,12 @@ export interface ActivityLog {
   message: string;
   type: 'received' | 'processing' | 'done' | 'error';
   timestamp: Date;
+}
+
+export interface AppSettings {
+  githubToken: string;
+  githubRepo: string;
+  githubUsername: string;
+  workspaceDir: string;
+  onboardingComplete: boolean;
 }
