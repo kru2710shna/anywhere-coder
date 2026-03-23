@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { Project, GitCommit, ActivityLog, MicState, Task } from './types';
-import { initialProjects, initialCommits, initialActivityLogs, getNextSimulatedTask } from './mock-data';
+import { initialProjects, initialCommits, initialActivityLogs } from './mock-data';
+
+const RELAY_URL = 'http://localhost:8000';
+const WS_URL = 'ws://localhost:8000';
 
 interface AppState {
   projects: Project[];
@@ -10,19 +13,31 @@ interface AppState {
   isOnline: boolean;
   totalLines: number;
   setMicState: (state: MicState) => void;
-  simulateTask: (projectId: string) => void;
   addProject: (title: string) => string;
   addTask: (projectId: string, text: string) => void;
+  submitVoiceTask: (projectId: string, text: string) => void;
+  checkRelayHealth: () => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
+export const useAppStore = create<AppState>((set, get) => ({
   projects: initialProjects,
   commits: initialCommits,
   activityLogs: initialActivityLogs,
   micState: 'idle',
-  isOnline: true,
+  isOnline: false,
   totalLines: 47,
+
   setMicState: (micState) => set({ micState }),
+
+  checkRelayHealth: async () => {
+    try {
+      const res = await fetch(`${RELAY_URL}/health`);
+      const data = await res.json();
+      set({ isOnline: data.status === 'online' });
+    } catch {
+      set({ isOnline: false });
+    }
+  },
 
   addProject: (title: string) => {
     const id = crypto.randomUUID();
@@ -33,20 +48,61 @@ export const useAppStore = create<AppState>((set) => ({
   },
 
   addTask: (projectId: string, text: string) => {
+    get().submitVoiceTask(projectId, text);
+  },
+
+  submitVoiceTask: async (projectId: string, text: string) => {
     const taskId = crypto.randomUUID();
+    const sessionId = crypto.randomUUID();
     const now = new Date();
 
-    // Phase 1: received
+    const addLog = (message: string, type: Task['logs'][0]['type']) => {
+      set((s) => ({
+        projects: s.projects.map((p) =>
+          p.id === projectId
+            ? {
+                ...p,
+                tasks: p.tasks.map((t) =>
+                  t.id === taskId
+                    ? {
+                        ...t,
+                        logs: [
+                          { id: crypto.randomUUID(), message, type, timestamp: new Date() },
+                          ...t.logs,
+                        ],
+                      }
+                    : t
+                ),
+              }
+            : p
+        ),
+      }));
+    };
+
+    const updateTask = (patch: Partial<Task>) => {
+      set((s) => ({
+        projects: s.projects.map((p) =>
+          p.id === projectId
+            ? { ...p, tasks: p.tasks.map((t) => (t.id === taskId ? { ...t, ...patch } : t)) }
+            : p
+        ),
+      }));
+    };
+
+    // Add task immediately
     set((s) => ({
-      micState: 'recording',
+      micState: 'processing',
       projects: s.projects.map((p) =>
         p.id === projectId
           ? {
               ...p,
               tasks: [
                 {
-                  id: taskId, text, status: 'received' as const, timestamp: now,
-                  logs: [{ id: `${taskId}-r`, message: 'Received task', type: 'received' as const, timestamp: now }],
+                  id: taskId,
+                  text,
+                  status: 'received' as const,
+                  timestamp: now,
+                  logs: [{ id: `${taskId}-r`, message: 'Task received', type: 'received' as const, timestamp: now }],
                 },
                 ...p.tasks,
               ],
@@ -55,131 +111,90 @@ export const useAppStore = create<AppState>((set) => ({
       ),
     }));
 
-    // Phase 2: transcribing
-    setTimeout(() => {
-      set((s) => ({
-        micState: 'processing',
-        projects: s.projects.map((p) =>
-          p.id === projectId
-            ? {
-                ...p,
-                tasks: p.tasks.map((t) =>
-                  t.id === taskId
-                    ? { ...t, status: 'transcribing' as const, logs: [{ id: `${taskId}-t`, message: 'Processing task...', type: 'processing' as const, timestamp: new Date() }, ...t.logs] }
-                    : t
-                ),
-              }
-            : p
-        ),
-      }));
-    }, 800);
+    // Open WebSocket for live updates
+    try {
+      const ws = new WebSocket(`${WS_URL}/ws/${sessionId}`);
 
-    // Phase 3: coding
-    setTimeout(() => {
-      set((s) => ({
-        projects: s.projects.map((p) =>
-          p.id === projectId
-            ? {
-                ...p,
-                tasks: p.tasks.map((t) =>
-                  t.id === taskId
-                    ? { ...t, status: 'coding' as const, logs: [{ id: `${taskId}-c`, message: `Working on: ${text}...`, type: 'processing' as const, timestamp: new Date() }, ...t.logs] }
-                    : t
-                ),
-              }
-            : p
-        ),
-      }));
-    }, 2000);
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
 
-    // Phase 4: done
-    setTimeout(() => {
-      const hash = Math.random().toString(36).substring(2, 9);
-      const lines = Math.floor(Math.random() * 30) + 10;
-      const commitMsg = `feat: ${text.toLowerCase()}`;
-      set((s) => ({
-        micState: 'done',
-        totalLines: s.totalLines + lines,
-        projects: s.projects.map((p) =>
-          p.id === projectId
-            ? {
-                ...p,
-                tasks: p.tasks.map((t) =>
-                  t.id === taskId
-                    ? {
-                        ...t, status: 'done' as const, linesWritten: lines,
-                        summary: `Completed "${text}" successfully.`,
-                        whatsNext: 'Review the changes and iterate.',
-                        commitHash: hash, commitMessage: commitMsg,
-                        logs: [{ id: `${taskId}-d`, message: `Committed: ${commitMsg}`, type: 'done' as const, timestamp: new Date() }, ...t.logs],
-                      }
-                    : t
-                ),
-              }
-            : p
-        ),
-        commits: [{ hash, message: commitMsg }, ...s.commits].slice(0, 5),
-      }));
-    }, 3500);
+        if (data.status === 'transcribing') {
+          updateTask({ status: 'transcribing' });
+          addLog(data.message || 'Processing...', 'processing');
+        }
 
-    setTimeout(() => set({ micState: 'idle' }), 4500);
-  },
+        if (data.status === 'coding') {
+          updateTask({ status: 'coding' });
+          addLog(data.message || 'Claude is coding...', 'processing');
+        }
 
-  simulateTask: (projectId: string) => {
-    const sim = getNextSimulatedTask();
-    const taskId = crypto.randomUUID();
-    const now = new Date();
+        if (data.status === 'done') {
+          const linesWritten = (data.files_written || 1) * 15;
+          updateTask({
+            status: 'done',
+            summary: data.summary,
+            whatsNext: data.whats_next,
+            linesWritten,
+            commitHash: data.commit_hash,
+            commitMessage: data.commit_message,
+          });
+          addLog(`Committed: ${data.commit_message || 'changes pushed'}`, 'done');
+          set((s) => ({
+            micState: 'done',
+            totalLines: s.totalLines + linesWritten,
+            commits: [
+              { hash: data.commit_hash || 'unknown', message: data.commit_message || text },
+              ...s.commits,
+            ].slice(0, 5),
+          }));
+          setTimeout(() => set({ micState: 'idle' }), 2000);
 
-    set((s) => ({
-      micState: 'recording',
-      projects: s.projects.map((p) =>
-        p.id === projectId
-          ? {
-              ...p,
-              tasks: [
-                { id: taskId, text: sim.text, status: 'received' as const, timestamp: now, logs: [{ id: `${taskId}-r`, message: 'Received task', type: 'received' as const, timestamp: now }] },
-                ...p.tasks,
-              ],
-            }
-          : p
-      ),
-    }));
+          // Browser notification
+          if (Notification.permission === 'granted') {
+            new Notification('Work From Anywhere', {
+              body: `Done — ${data.summary}`,
+              icon: '/favicon.ico',
+            });
+          }
 
-    setTimeout(() => {
-      set((s) => ({
-        micState: 'processing',
-        projects: s.projects.map((p) =>
-          p.id === projectId
-            ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? { ...t, status: 'transcribing' as const, logs: [{ id: `${taskId}-t`, message: 'Transcribing voice...', type: 'processing' as const, timestamp: new Date() }, ...t.logs] } : t) }
-            : p
-        ),
-      }));
-    }, 800);
+          ws.close();
+        }
 
-    setTimeout(() => {
-      set((s) => ({
-        projects: s.projects.map((p) =>
-          p.id === projectId
-            ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? { ...t, status: 'coding' as const, logs: [{ id: `${taskId}-c`, message: `Asking Claude to ${sim.text.toLowerCase()}...`, type: 'processing' as const, timestamp: new Date() }, ...t.logs] } : t) }
-            : p
-        ),
-      }));
-    }, 2000);
+        if (data.status === 'error') {
+          updateTask({ status: 'error' });
+          addLog(`Error: ${data.message}`, 'error');
+          set({ micState: 'idle' });
+          ws.close();
+        }
+      };
 
-    setTimeout(() => {
-      const hash = Math.random().toString(36).substring(2, 9);
-      set((s) => ({
-        micState: 'done',
-        totalLines: s.totalLines + sim.lines,
-        projects: s.projects.map((p) =>
-          p.id === projectId
-            ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? { ...t, status: 'done' as const, summary: sim.summary, whatsNext: sim.whatsNext, linesWritten: sim.lines, commitHash: hash, commitMessage: sim.commit, logs: [{ id: `${taskId}-d`, message: `Committed: ${sim.commit}`, type: 'done' as const, timestamp: new Date() }, ...t.logs] } : t) }
-            : p
-        ),
-        commits: [{ hash, message: sim.commit }, ...s.commits].slice(0, 5),
-      }));
-    }, 3500);
+      ws.onerror = () => {
+        addLog('WebSocket connection failed', 'error');
+        set({ micState: 'idle' });
+      };
 
-    setTimeout(() => set({ micState: 'idle' }), 4500);
+      // POST task to relay after WebSocket is open
+      ws.onopen = async () => {
+        try {
+          await fetch(`${RELAY_URL}/task`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task: text, project_id: projectId, session_id: sessionId }),
+          });
+        } catch (e) {
+          addLog('Failed to reach relay server', 'error');
+          set({ micState: 'idle' });
+          ws.close();
+        }
+      };
+
+    } catch (e) {
+      set({ micState: 'idle' });
+    }
+
+    // Request notification permission
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   },
 }));

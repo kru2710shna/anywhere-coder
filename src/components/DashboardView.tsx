@@ -169,7 +169,7 @@ export function DashboardView({ onSwitchView }: { onSwitchView: () => void }) {
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Voice Assistant</span>
                   </div>
                   <div className="flex flex-col items-center py-4">
-                    <MicButton state={micState} />
+                    <MicButton state={micState} projectId={selectedProject?.id} />
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button

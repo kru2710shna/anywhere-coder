@@ -1,9 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Loader2, Check } from 'lucide-react';
 import { MicState } from '@/lib/types';
+import { useAppStore } from '@/lib/store';
 
 interface MicButtonProps {
   state: MicState;
+  projectId?: string;
 }
 
 const WaveformBars = () => (
@@ -13,29 +15,72 @@ const WaveformBars = () => (
         key={i}
         className="w-1 rounded-full bg-destructive-foreground"
         animate={{ height: [8, 28, 8] }}
-        transition={{
-          duration: 0.6,
-          repeat: Infinity,
-          delay: i * 0.1,
-          ease: 'easeInOut',
-        }}
+        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1, ease: 'easeInOut' }}
       />
     ))}
   </div>
 );
 
-export function MicButton({ state }: MicButtonProps) {
+export function MicButton({ state, projectId }: MicButtonProps) {
+  const { setMicState, submitVoiceTask } = useAppStore();
+
   const isRecording = state === 'recording';
   const isProcessing = state === 'processing';
   const isDone = state === 'done';
+  const isIdle = state === 'idle';
+
+  const startListening = () => {
+    if (!isIdle || !projectId) return;
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert('Speech recognition not supported. Use Chrome or Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setMicState('recording');
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      console.log('[MicButton] Heard:', transcript);
+      submitVoiceTask(projectId, transcript);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('[MicButton] Speech error:', event.error);
+      setMicState('idle');
+    };
+
+    recognition.onend = () => {
+      if (state === 'recording') setMicState('idle');
+    };
+
+    recognition.start();
+  };
 
   return (
     <div className="flex flex-col items-center gap-6">
       <motion.div
-        className={`relative flex h-[120px] w-[120px] items-center justify-center rounded-full transition-colors duration-300 ${
-          isRecording ? 'bg-destructive animate-mic-recording' : isDone ? 'bg-success' : 'bg-primary animate-mic-pulse'
+        onClick={startListening}
+        className={`relative flex h-[120px] w-[120px] cursor-pointer items-center justify-center rounded-full transition-colors duration-300 ${
+          isRecording
+            ? 'bg-destructive animate-mic-recording'
+            : isDone
+            ? 'bg-success'
+            : isProcessing
+            ? 'bg-primary/70'
+            : 'bg-primary animate-mic-pulse'
         }`}
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: isIdle ? 0.95 : 1 }}
         animate={isDone ? { scale: [1, 1.1, 1] } : {}}
         transition={{ duration: 0.3 }}
       >
@@ -74,10 +119,10 @@ export function MicButton({ state }: MicButtonProps) {
         initial={{ opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        {state === 'idle' && 'Hold to speak'}
-        {state === 'recording' && 'Listening...'}
-        {state === 'processing' && 'Thinking...'}
-        {state === 'done' && 'Done!'}
+        {isIdle && (projectId ? 'Tap to speak' : 'Select a project first')}
+        {isRecording && 'Listening...'}
+        {isProcessing && 'Claude is coding...'}
+        {isDone && 'Committed to GitHub!'}
       </motion.p>
     </div>
   );
