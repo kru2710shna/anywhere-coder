@@ -8,7 +8,7 @@ interface MobileViewProps {
 
 export function MobileView({ onSwitchView }: MobileViewProps) {
   const { projects, micState } = useAppStore();
-  const allTasks = projects.flatMap((p) => p.tasks).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  const allTasks = projects.flatMap((p) => p.tasks).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
     <div className="flex min-h-screen flex-col px-6 py-8">

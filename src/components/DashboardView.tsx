@@ -25,7 +25,7 @@ const logBorderColors = {
 };
 
 function timeAgo(date: Date) {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
@@ -287,7 +287,7 @@ export function DashboardView({ onSwitchView, onOpenSettings }: { onSwitchView: 
                                     {task.logs.map((log, i) => (
                                       <motion.div key={log.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3, delay: i * 0.04 }} className={`border-l-2 ${logBorderColors[log.type]} pl-3 py-1`}>
                                         <div className="flex items-center gap-2">
-                                          <span className="text-[10px] text-muted-foreground font-mono shrink-0">{log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                          <span className="text-[10px] text-muted-foreground font-mono shrink-0">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                           <span className="text-xs text-foreground">{log.message}</span>
                                         </div>
                                       </motion.div>
