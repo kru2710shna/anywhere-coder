@@ -7,7 +7,7 @@ interface HomeProps {
 
 const features = [
   { icon: Mic, title: "Speak your intent", desc: "Press mic on your phone and describe what to build. No typing, no IDE, no desk." },
-  { icon: Code2, title: "Claude codes it", desc: "Your laptop agent receives the task, calls Claude, writes files, and commits to git." },
+  { icon: Code2, title: "Agent codes it", desc: "Your laptop agent receives the task, calls Claude, writes files, and commits to git." },
   { icon: GitCommit, title: "Get a summary back", desc: "What was done, what's next — pushed back to your phone in seconds." },
 ];
 

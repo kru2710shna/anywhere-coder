@@ -5,7 +5,7 @@ import { MicButton } from '@/components/MicButton';
 import { TaskStatus } from '@/lib/types';
 import {
   Code2, ChevronRight, GitCommit, CheckCircle,
-  Plus, ArrowRight, FolderOpen, Layers, ArrowLeft, Settings,
+  Plus, ArrowRight, FolderOpen, Layers, ArrowLeft, Settings as SettingsIcon,
   Mic, Send, X,
 } from 'lucide-react';
 
@@ -33,7 +33,7 @@ function timeAgo(date: Date) {
 }
 
 export function DashboardView({ onSwitchView, onOpenSettings }: { onSwitchView: () => void; onOpenSettings?: () => void }) {
-  const { projects, isOnline, totalLines, micState, simulateTask, addProject, addTask } = useAppStore();
+  const { projects, isOnline, githubConnected, totalLines, micState, addProject, addTask } = useAppStore();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [showNewProject, setShowNewProject] = useState(false);
@@ -75,8 +75,8 @@ export function DashboardView({ onSwitchView, onOpenSettings }: { onSwitchView: 
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button onClick={onOpenSettings} className="text-muted-foreground hover:text-foreground transition-colors ml-2"><Settings className="h-3.5 w-3.5" /></button>
-          <span className={`h-2 w-2 rounded-full ${isOnline ? 'bg-success animate-status-pulse' : 'bg-destructive'}`} />
+          <button onClick={onOpenSettings} className="text-muted-foreground hover:text-foreground transition-colors ml-2"><SettingsIcon className="h-3.5 w-3.5" /></button>
+          <span className={`h-2 w-2 rounded-full ${isOnline ? 'bg-success animate-status-pulse' : 'bg-destructive'}`} /><span className="text-[11px] text-muted-foreground ml-3 mr-1">|</span><span className={`h-2 w-2 rounded-full ${githubConnected ? 'bg-success animate-status-pulse' : 'bg-warning'}`} />
           <span className="text-[11px] text-muted-foreground">{isOnline ? 'Online' : 'Offline'}</span>
         </div>
       </header>
@@ -174,7 +174,6 @@ export function DashboardView({ onSwitchView, onOpenSettings }: { onSwitchView: 
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button
-                      onClick={() => simulateTask(selectedProject.id)}
                       className="flex-1 rounded-md border border-border bg-muted/50 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted active:scale-[0.98]"
                     >
                       Simulate Voice Task
