@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Github, FolderOpen, Save, Check, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Github, FolderOpen, Save, Check, ExternalLink, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
 export default function Settings({ onBack }: { onBack: () => void }) {
@@ -11,6 +11,14 @@ export default function Settings({ onBack }: { onBack: () => void }) {
   const [workspace, setWorkspace] = useState(settings.workspaceDir);
   const [saved, setSaved] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleReset = () => {
+    if (!showConfirm) { setShowConfirm(true); setTimeout(() => setShowConfirm(false), 3000); return; }
+    saveSettings({ githubToken: "", githubRepo: "", githubUsername: "", workspaceDir: "", onboardingComplete: false });
+    localStorage.clear();
+    window.location.reload();
+  };
 
   const handleSave = async () => {
     saveSettings({ githubToken: token, githubRepo: repo, githubUsername: username, workspaceDir: workspace });
@@ -113,6 +121,16 @@ export default function Settings({ onBack }: { onBack: () => void }) {
 
         <p className="text-center text-[11px] text-muted-foreground">
           All settings stored locally in your browser only.
+          <button
+            onClick={handleReset}
+            className={`flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm transition-colors ${showConfirm
+                ? 'border-destructive text-destructive hover:bg-destructive/5'
+                : 'border-border text-muted-foreground hover:text-foreground'
+              }`}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            {showConfirm ? 'Click again to confirm reset' : 'Reset & reconfigure'}
+          </button>
         </p>
       </div>
     </div>
